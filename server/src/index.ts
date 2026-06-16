@@ -1,9 +1,7 @@
 import cors from 'cors';
-import dotenv from 'dotenv';
 import express, { type Request, type Response } from 'express';
+import type { RowDataPacket } from 'mysql2';
 import { pool } from './db.js';
-
-dotenv.config();
 
 const app = express();
 const port = Number(process.env.PORT ?? 4000);
@@ -12,7 +10,7 @@ const corsOrigin = process.env.CORS_ORIGIN ?? 'http://localhost:5173';
 app.use(cors({ origin: corsOrigin }));
 app.use(express.json());
 
-type DestinationRow = {
+type DestinationRow = RowDataPacket & {
   id: number;
   city: string;
   tag: string;
@@ -38,7 +36,7 @@ app.get('/api/destinations', async (_request: Request, response: Response) => {
   try {
     const [rows] = await pool.query<DestinationRow[]>('SELECT id, city, tag, price, duration, description, image FROM destinations ORDER BY id ASC');
     response.json({ data: rows });
-  } catch (error) {
+  } catch {
     response.status(500).json({ error: 'Impossible de charger les destinations.' });
   }
 });
@@ -57,7 +55,7 @@ app.post('/api/leads', async (request: Request<unknown, unknown, LeadPayload>, r
       [fullName, email, destination, budget, message]
     );
     response.status(201).json({ ok: true, message: 'Demande reçue par la conciergerie NovaTrips.' });
-  } catch (error) {
+  } catch {
     response.status(500).json({ error: 'Impossible d’enregistrer la demande.' });
   }
 });

@@ -40,7 +40,7 @@ export default function ContactPage() {
       setStatus('success');
       setNotice('Votre demande est bien reçue. La conciergerie NovaTrips revient vers vous sous 24h ouvrées.');
       setValues(initialValues);
-    } catch (error) {
+    } catch {
       setStatus('error');
       setNotice('Le serveur est indisponible pour le moment. Vous pouvez relancer l’envoi dans quelques instants.');
     }

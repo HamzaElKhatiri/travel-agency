@@ -31,7 +31,9 @@ export default function Navbar() {
         ))}
       </nav>
 
-      <Link className="nav-cta" to="/contact">Créer mon voyage</Link>
+      <Link className="nav-cta" to="/contact" onClick={() => setIsOpen(false)}>
+        Créer mon voyage
+      </Link>
     </header>
   );
 }
