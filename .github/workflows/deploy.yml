@@ -3,6 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -12,35 +13,30 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: Generate lock file if missing
-        run: test -f package-lock.json || npm install --package-lock-only --ignore-scripts
-
+          cache: npm
       - run: npm ci
-
-      - run: npm run build
+      - name: Build
+        run: npm run build
         env:
-          GITHUB_PAGES: true
-
-      - name: Configure SPA routing
-        run: |
-          sed -i "s|</head>|<script>(function(){var r=sessionStorage.getItem('spa_redirect');if(r){sessionStorage.removeItem('spa_redirect');history.replaceState(null,'',r)}})()</script></head>|" dist/index.html
-          cp dist/404.html dist/404.html.bak 2>/dev/null || true
-          cat > dist/404.html << 'EOF'
-          <!doctype html><html lang="en"><head><meta charset="UTF-8"/><script>var s=location.pathname.split('/');sessionStorage.setItem('spa_redirect','/'+(s.slice(2).join('/')||'')+location.search+location.hash);location.replace('/'+s[1]+'/');</script></head><body></body></html>
-          EOF
-
+          GITHUB_PAGES: 'true'
+          GITHUB_PAGES_DOMAIN: novatrips.skoleom.ai
       - uses: actions/configure-pages@v5
-
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
-
       - uses: actions/deploy-pages@v4
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
